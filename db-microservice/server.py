@@ -25,7 +25,7 @@ create table if not exists "Tari"
 );
 
 alter table "Tari"
-    owner to tema2;
+    owner to idp_user;
 
 create table if not exists "Orase"
 (
@@ -43,7 +43,7 @@ create table if not exists "Orase"
 );
 
 alter table "Orase"
-    owner to tema2;
+    owner to idp_user;
 
 create table if not exists "Temperaturi"
 (
@@ -60,7 +60,7 @@ create table if not exists "Temperaturi"
 );
 
 alter table "Temperaturi"
-    owner to tema2;
+    owner to idp_user;
 
 """)
 connection.commit()

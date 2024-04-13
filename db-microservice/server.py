@@ -372,27 +372,233 @@ def delete_city(city_id):
 
 @app.route("/api/temperatures", methods=["POST"])
 def post_temperatures():
-    pass
+    global cursor
+    global connection
+
+    json_object = request.get_json(silent=True)
+    if not json_object:
+        return Response(status=400)
+
+    try:
+        city_id = json_object['idOras']
+        value = json_object['valoare']
+        current_timestamp = datetime.now()
+    except KeyError:
+        return Response(status=400)
+
+    insert_in_temperatures_request = """
+    insert into "Temperaturi" (valoare, timestamp, id_oras)
+    values ({valoare}, '{data_curenta}', {id_oras});
+    """
+    try:
+        cursor.execute(insert_in_temperatures_request.format(valoare=value, data_curenta=current_timestamp, id_oras=city_id))
+        connection.commit()
+    except UniqueViolation:
+        connection.rollback()
+        return Response(status=400)
+    except ForeignKeyViolation:
+        connection.rollback()
+        return Response(status=400)
+    except Exception:
+        connection.rollback()
+        return Response(status=400)
+
+    request_temperature_id = """
+    select id from "Temperaturi"
+    where valoare={valoare} and id_oras={id_oras} and timestamp='{data_curenta}';
+    """
+    try:
+        cursor.execute(request_temperature_id.format(valoare=value, id_oras=city_id, data_curenta=current_timestamp))
+    except Exception:
+        connection.rollback()
+        return Response(status=400)
+
+    created_id_fetch_response = cursor.fetchall()
+    created_temperature_id = created_id_fetch_response.pop()
+    return Response(json.dumps({"id": created_temperature_id[0]}, indent=4), status=201, mimetype="application/json")
+
 
 @app.route("/api/temperatures", methods=["GET"])
 def get_temperatures():
-    pass
+    global cursor
+    global connection
+
+    lat = request.args.get('lat', None)
+    lon = request.args.get('lon', None)
+    from_date = request.args.get('from', None)
+    until_date = request.args.get('until', None)
+
+    request_temperature_with_filter = """select "Temperaturi".id_oras, "Temperaturi".valoare, "Temperaturi".timestamp, "Temperaturi".id from "Temperaturi"
+    INNER JOIN "Orase"
+    on "Temperaturi".id_oras = "Orase".id
+"""
+    exist_where = False
+    if not (lat is None):
+        exist_where = True
+        request_temperature_with_filter += """where "Orase".latitudine={lat} """.format(lat=lat)
+    if not (lon is None):
+        if not exist_where:
+            exist_where = True
+            request_temperature_with_filter += "where "
+        else:
+            request_temperature_with_filter += "AND "
+        request_temperature_with_filter += """ "Orase".longitudine={lon} """.format(lon=lon)
+    if not (from_date is None):
+        if not exist_where:
+            exist_where = True
+            request_temperature_with_filter += "where "
+        else:
+            request_temperature_with_filter += "AND "
+        request_temperature_with_filter += f""" "Temperaturi".timestamp >= '{from_date}' """.format(
+            from_date=from_date)
+    if not (until_date is None):
+        if not exist_where:
+            request_temperature_with_filter += "where "
+        else:
+            request_temperature_with_filter += "AND "
+        request_temperature_with_filter += """ "Temperaturi".timestamp <= '{until_date}'""".format(
+            until_date=until_date)
+    request_temperature_with_filter += ";"
+    try:
+        cursor.execute(request_temperature_with_filter)
+    except Exception:
+        connection.rollback()
+        return Response(status=400)
+    all_temperature = cursor.fetchall()
+    return_list = []
+
+    for temperature in all_temperature:
+        temperature_dict = collections.OrderedDict(
+            {"id": temperature[3], "valoare": temperature[1], "timestamp": str(temperature[2].strftime("%Y-%m-%d"))})
+        return_list.append(temperature_dict)
+    return Response(json.dumps(return_list, indent=4), status=200, mimetype="application/json")
+
 
 @app.route("/api/temperatures/cities/<int:city_id>", methods=["GET"])
 def get_temperature_by_city(city_id):
-    pass
+    global cursor
+    global connection
+    from_date = request.args.get('from', None)
+    until_date = request.args.get('until', None)
+
+    request_all_temperature_by_city_with_filters = """select id_oras, valoare, timestamp, id from "Temperaturi" 
+    where id_oras={id}
+    """.format(id=city_id)
+    exista_where = True
+    if not (from_date is None):
+        request_all_temperature_by_city_with_filters += "And "
+        request_all_temperature_by_city_with_filters += f""" timestamp >= '{from_date}' """.format(
+            from_date=from_date)
+
+    if not (until_date is None):
+        if not exista_where:
+            request_all_temperature_by_city_with_filters += "where "
+        else:
+            request_all_temperature_by_city_with_filters += "AND "
+        request_all_temperature_by_city_with_filters += """ timestamp <= '{until_date}'""".format(
+            until_date=until_date)
+
+    request_all_temperature_by_city_with_filters += ";"
+    try:
+        cursor.execute(request_all_temperature_by_city_with_filters)
+    except Exception:
+        connection.rollback()
+        return Response(status=400)
+    fetched_temperature_with_city = cursor.fetchall()
+    return_list = []
+    for temperature in fetched_temperature_with_city:
+        temperature_dict = collections.OrderedDict(
+            {"id": temperature[3], "valoare": temperature[1], "timestamp": str(temperature[2].strftime("%Y-%m-%d"))})
+        return_list.append(temperature_dict)
+    return Response(json.dumps(return_list, indent=4), status=200, mimetype="application/json")
+
 
 @app.route("/api/temperatures/countries/<int:country_id>", methods=["GET"])
 def get_temperature_by_country(country_id):
-    pass
+    global cursor
+    global connection
+
+    from_date = request.args.get('from', None)
+    until_date = request.args.get('until', None)
+
+    request_temperature_by_country_filtered = """select "Temperaturi".id_oras, "Temperaturi".valoare, "Temperaturi".timestamp, "Temperaturi".id from "Temperaturi"
+    INNER JOIN "Orase"
+    on "Temperaturi".id_oras = "Orase".id
+    INNER JOIN "Tari"
+    on "Orase".id_tara = "Tari".id
+    WHERE "Tari".id = {id}
+""".format(id=country_id)
+    exist_where = True
+    if not (from_date is None):
+        request_temperature_by_country_filtered += f""" AND "Temperaturi".timestamp >= '{from_date}' """.format(
+            from_date=from_date)
+    if not (until_date is None):
+        if not exist_where:
+            request_temperature_by_country_filtered += "where "
+        else:
+            request_temperature_by_country_filtered += "AND "
+        request_temperature_by_country_filtered += """ "Temperaturi".timestamp <= '{until_date}'""".format(
+            until_date=until_date)
+
+    request_temperature_by_country_filtered += ";"
+    try:
+        cursor.execute(request_temperature_by_country_filtered)
+    except Exception:
+        connection.rollback()
+        return Response(status=400)
+    fetched_temperatures_by_country = cursor.fetchall()
+    return_list = []
+
+    for temperature in fetched_temperatures_by_country:
+        temperature_dict = collections.OrderedDict(
+            {"id": temperature[3], "valoare": temperature[1], "timestamp": str(temperature[2].strftime("%Y-%m-%d"))})
+        return_list.append(temperature_dict)
+    return Response(json.dumps(return_list, indent=4), status=200, mimetype="application/json")
+
 
 @app.route("/api/temperatures/<int:temperature_id>", methods=["PUT"])
 def put_temperature(temperature_id):
-    pass
+    global cursor
+    global connection
+    json_object = request.get_json(silent=True)
+    if not json_object:
+        return Response(status=400)
+    try:
+        temperature_id_check = json_object['id']
+        city_id = json_object['idOras']
+        value = json_object['valoare']
+    except KeyError:
+        return Response(status=400)
+    if not (temperature_id_check == temperature_id_check):
+        return Response(status=400)
+    update_temperatures_request = """update "Temperaturi"
+    set id_oras = {id_oras},
+        valoare = {valoare}
+    where id = {id};"""
+    try:
+        cursor.execute(update_temperatures_request.format(id_oras=city_id, valoare=value, id=temperature_id))
+    except Exception:
+        connection.rollback()
+        return Response(status=400)
+    connection.commit()
+    return Response(status=200)
+
 
 @app.route("/api/temperatures/<int:temperature_id>", methods=["DELETE"])
 def delete_temperature(temperature_id):
-   pass
+    global cursor
+    global connection
+    delete_temperature_request = """delete
+    from "Temperaturi"
+    where id = {id};"""
+    try:
+        cursor.execute(delete_temperature_request.format(id=temperature_id))
+    except Exception:
+        connection.rollback()
+        return Response(status=400)
+    connection.commit()
+    return Response(status=200)
+
 
 if __name__ == "__main__":
     app.run()

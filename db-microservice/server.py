@@ -215,23 +215,160 @@ def delete_country(country_id):
 
 @app.route("/api/cities", methods=["POST"])
 def post_city():
-    pass
+    global cursor
+    global connection
+
+    json_object = request.get_json(silent=True)
+    if not json_object:
+        return Response(status=400)
+
+    try:
+        country_id = json_object['idTara']
+        city_name = json_object['nume']
+        city_lat = json_object['lat']
+        city_lon = json_object['lon']
+    except KeyError:
+        return Response(status=400)
+
+    insert_city_request = """
+    insert into "Orase" (id_tara, nume_oras, latitudine, longitudine)
+    values ({id_tara}, '{nume}', {lat}, {lon});
+    """
+    try:
+        cursor.execute(insert_city_request.format(id_tara=country_id, nume=city_name, lat=city_lat, lon=city_lon))
+        connection.commit()
+    except UniqueViolation:
+        connection.rollback()
+        return Response(status=409)
+    except ForeignKeyViolation:
+        connection.rollback()
+        return Response(status=409)
+    except Exception:
+        connection.rollback()
+        return Response(status=500)
+
+    try:
+        id_request = """select id from "Orase" where nume_oras='{nume}';"""
+        cursor.execute(id_request.format(nume=city_name))
+    except Exception:
+        connection.rollback()
+        return Response(status=409)
+
+    created_id = cursor.fetchall()
+    country_id = created_id.pop()
+    return Response(json.dumps({"id": country_id[0]}, indent=4), status=201, mimetype="application/json")
+
 
 @app.route("/api/cities", methods=["GET"])
 def get_cities():
-    pass
+    global cursor
+    global connection
+
+    request_all_cities = """
+    select id, id_tara, nume_oras, latitudine ,longitudine
+    from "Orase";
+    """
+
+    try:
+        cursor.execute(request_all_cities)
+    except Exception:
+        connection.rollback()
+        return Response(status=500)
+
+    all_cities = cursor.fetchall()
+    return_list = []
+    for city in all_cities:
+        city_dict = collections.OrderedDict(
+            {"id": city[0], "idTara": city[1], "nume": city[2], "lat": city[3], "lon": city[4]})
+        return_list.append(city_dict)
+
+    return Response(json.dumps(return_list, indent=4), status=200, mimetype="application/json")
+
 
 @app.route("/api/cities/country/<int:country_id>", methods=["GET"])
 def get_city_by_country(country_id):
-    pass
+    global cursor
+    global connection
+
+    request_city_by_country = """
+    select id, id_tara, nume_oras, latitudine ,longitudine
+    from "Orase"
+    where id_tara={id_tara};
+    """
+    try:
+        cursor.execute(request_city_by_country.format(id_tara=country_id))
+    except Exception:
+        connection.rollback()
+        return Response(status=500)
+
+    all_cities = cursor.fetchall()
+    return_list = []
+    for city in all_cities:
+        city_dict = collections.OrderedDict(
+            {"id": city[0], "idTara": city[1], "nume": city[2], "lat": city[3], "lon": city[4]})
+        return_list.append(city_dict)
+    return Response(json.dumps(return_list, indent=4), status=200, mimetype="application/json")
+
 
 @app.route("/api/cities/<int:city_id>", methods=["PUT"])
 def put_city(city_id):
-    pass
+    global cursor
+    global connection
+
+    json_object = request.get_json(silent=True)
+    if not json_object:
+        return Response(status=400)
+
+    try:
+        check_city_id = json_object['id']
+        country_id = json_object['idTara']
+        city_name = json_object['nume']
+        city_lon = json_object['lon']
+        city_lat = json_object['lat']
+    except KeyError:
+        return Response(status=400)
+
+    if not (check_city_id == city_id):
+        return Response(status=400)
+
+    update_city_request = """
+    update "Orase"
+    set latitudine = {latitudine},
+        longitudine = {longitudine},
+        nume_oras = '{nume_oras}',
+        id_tara = '{id_tara}'
+    where id = {id};"""
+    try:
+        cursor.execute(update_city_request.format(latitudine=city_lat, longitudine=city_lon, nume_oras=city_name,
+                                                  id_tara=country_id, id=city_id))
+        connection.commit()
+    except UniqueViolation:
+        connection.rollback()
+        return Response(status=409)
+    except ForeignKeyViolation:
+        connection.rollback()
+        return Response(status=409)
+    except Exception:
+        connection.rollback()
+        return Response(status=500)
+
+    return Response(status=200)
+
 
 @app.route("/api/cities/<int:city_id>", methods=["DELETE"])
 def delete_city(city_id):
-    pass
+    global cursor
+    global connection
+
+    delete_string = """delete from "Orase" where id = {id};"""
+    try:
+        cursor.execute(delete_string.format(id=city_id))
+        connection.commit()
+    except Exception:
+        connection.rollback()
+        return Response(status=500)
+    return Response(status=200)
+
 
 @app.route("/api/temperatures", methods=["POST"])
 def post_temperatures():

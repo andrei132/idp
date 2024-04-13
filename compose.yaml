@@ -33,6 +33,24 @@ services:
       postgres:
         condition: service_healthy
 
+  authapi:
+    container_name: idp_auth_api
+    build:
+      context: auth-microservice
+    restart: always
+    ports:
+      - 8888:6000
+    volumes:
+      - ./auth-microservice:/idp_auth
+    networks:
+      - pythonapi
+      - adminernet
+    depends_on:
+      postgres:
+        condition: service_healthy
+      # keycloak:
+      #   condition: service_healthy
+
   adminer:
     container_name: idp-adminer
     image: adminer
@@ -58,6 +76,14 @@ services:
       - start-dev
     volumes:
       - ./container-data/keycloak:/opt/keycloak/data/h2
+    # healthcheck:
+    #     test: ["CMD", "curl", "--head","fsS", "http://localhost:8090/health/ready"]
+    #     interval: 5s
+    #     timeout: 2s
+    #     retries: 15
+    networks:
+      - pythonapi
+      - adminernet
 
 volumes:
   db-data:

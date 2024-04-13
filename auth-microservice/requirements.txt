@@ -1,2 +1,2 @@
-pyjwt[crypto]
-Authlib
+python-keycloak
+Flask==3.0.0

@@ -1,24 +1,18 @@
-FROM quay.io/keycloak/keycloak:latest as builder
+# syntax=docker/dockerfile:1.4
+FROM python:3.10-alpine
 
-# Enable health and metrics support
-ENV KC_HEALTH_ENABLED=true
-ENV KC_METRICS_ENABLED=true
+WORKDIR /idp_auth
+COPY requirements.txt /idp_auth/
+RUN pip3 install --upgrade pip
+RUN pip3 install -r requirements.txt
 
-# Configure a database vendor
-ENV KC_DB=postgres
+COPY . .
 
-WORKDIR /opt/keycloak
-# for demonstration purposes only, please make sure to use proper certificates in production instead
-RUN keytool -genkeypair -storepass password -storetype PKCS12 -keyalg RSA -keysize 2048 -dname "CN=server" -alias server -ext "SAN:c=DNS:localhost,IP:127.0.0.1" -keystore conf/server.keystore
-RUN /opt/keycloak/bin/kc.sh build
+ENV FLASK_APP auth.py
+ENV FLASK_RUN_PORT 6000
+ENV FLASK_RUN_HOST 0.0.0.0
 
-FROM quay.io/keycloak/keycloak:latest
-COPY --from=builder /opt/keycloak/ /opt/keycloak/
+EXPOSE 6000
 
-# change these values to point to a running postgres instance
-ENV KC_DB=postgres
-ENV KC_DB_URL=db_idp
-ENV KC_DB_USERNAME=idp_user
-ENV KC_DB_PASSWORD=idp_pass
-ENV KC_HOSTNAME=idp_postgres
-ENTRYPOINT ["/opt/keycloak/bin/kc.sh"]
+# run with python
+CMD ["flask", "run"]

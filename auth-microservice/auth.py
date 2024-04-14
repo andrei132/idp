@@ -86,6 +86,7 @@ def validate_token():
         # not all data received
         return Response(status=400)
     token_info = keycloak_openid.introspect(access_token)
+    # FIXME return coresponding error status
     return Response(json.dumps(token_info), status=200)
 
 

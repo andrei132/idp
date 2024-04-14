@@ -1,4 +1,4 @@
-from flask import Flask, request, Response
+from flask import Flask, request, Response, jsonify
 from datetime import datetime
 import psycopg
 import json
@@ -74,7 +74,7 @@ def post_country():
     # Get JSON from body
     json_object = request.get_json(silent=True)
     if not json_object:
-        return Response(status=400)
+        return jsonify({"error": "JSON data is missing"}), 400
 
     # try to get all needed information from json
     try:
@@ -83,7 +83,7 @@ def post_country():
         country_lat = json_object['lat']
     except KeyError:
         # not all data received
-        return Response(status=400)
+        return jsonify({"error": "Missing argument"}), 400
 
     insert_command_in_country_table = """
     insert into "Tari" (nume_tara, latitudine, longitudine)
@@ -154,7 +154,7 @@ def put_country(country_id):
     # get json body
     json_object = request.get_json(silent=True)
     if not json_object:
-        return Response(status=400)
+        return Response(status=404)
 
     try:
         check_country_id = json_object['id']
@@ -162,7 +162,7 @@ def put_country(country_id):
         country_lon = json_object['lon']
         country_lat = json_object['lat']
     except KeyError:
-        return Response(status=400)
+        return Response(status=405)
 
     # this JSON is not for this request
     if not (check_country_id == country_id):

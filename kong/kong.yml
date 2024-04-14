@@ -1,0 +1,16 @@
+_format_version: "2.1"
+
+services:
+  - name: idp_auth_api
+    url: http://idp-adminer:8080/
+    routes:
+      - name: idp_auth_api-route
+        paths: 
+          - /adminer
+
+consumers:
+  - username: lab-student
+
+keyauth_credentials:
+  - consumer: lab-student
+    key: mobylab

@@ -230,4 +230,4 @@ def get_temperature_by_country():
     return jsonify({"erorr":"Not yet impemented"}) , 200
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=6002, debug=True)
+    app.run()

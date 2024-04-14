@@ -17,11 +17,17 @@ services:
       POSTGRES_USER: 'idp_user'
       POSTGRES_PASSWORD: 'idp_pass'
       POSTGRES_DB: 'db_idp'
+    deploy:
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 50M
+      restart_policy:
+          condition: on-failure
 
   pythonapi:
     container_name: idp_python_api
-    build:
-      context: db-microservice
+    image: girnetandrei0336/idp-pythonapi:latest
     restart: always
     ports:
       - 6000:6000
@@ -32,11 +38,18 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 50M
+      restart_policy:
+          condition: on-failure
 
   authapi:
     container_name: idp_auth_api
-    build:
-      context: auth-microservice
+    image: girnetandrei0336/auth-microservice:latest
     restart: always
     ports:
       - 8888:6000
@@ -45,29 +58,19 @@ services:
     networks:
       - pythonapi
       - adminernet
-      - konginternal
     depends_on:
       postgres:
         condition: service_healthy
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 50M
+      restart_policy:
+          condition: on-failure
       # keycloak:
       #   condition: service_healthy
-
-  bussinessapi:
-    container_name: idp_bussiness_api
-    build:
-      context: business-logic-microservice
-    restart: always
-    ports:
-      - 9090:6002
-    volumes:
-      - ./business-logic-microservice:/business-logic-microservice
-    networks:
-      - pythonapi
-      - adminernet
-      - konginternal
-    depends_on:
-      postgres:
-        condition: service_healthy
 
   adminer:
     container_name: idp-adminer
@@ -80,7 +83,13 @@ services:
         condition: service_healthy
     networks:
       - adminernet
-      - konginternal
+    deploy:
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 50M
+      restart_policy:
+          condition: on-failure
 
   keycloak:
     container_name: idp-keycloak
@@ -103,6 +112,13 @@ services:
     networks:
       - pythonapi
       - adminernet
+    deploy:
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 50M
+      restart_policy:
+          condition: on-failure
   portainer:
       image: portainer/portainer-ce:latest
       ports:
@@ -111,6 +127,13 @@ services:
           - ./container-data/portainer:/data
           - /var/run/docker.sock:/var/run/docker.sock
       restart: unless-stopped
+      deploy:
+        resources:
+          limits:
+            cpus: "0.2"
+            memory: 50M
+        restart_policy:
+            condition: on-failure
   kong:
     image: kong:latest
     volumes:
@@ -130,11 +153,12 @@ services:
       placement:
         constraints: [node.role == manager] # constrângerea de rulare doar pe manager, pentru a nu exista conflict la nivel de volume
     networks:
-      - konginternal
+      - pythonapi
+      - adminernet
+
 volumes:
   db-data:
 
 networks:
   pythonapi:
   adminernet:
-  konginternal:

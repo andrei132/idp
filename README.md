@@ -16,7 +16,7 @@ In final va trebui sa avem o aplicatie care respecta urmatoarele conditi
 - [X] existența și integrarea Portainer sau a unui serviciu similar (0.5p)
 - [ ] utilizarea Docker și rularea într-un cluster Docker Swarm (0.6p)
 - [ ] existența și integrarea Kong sau a unui serviciu similar (0.6p)
-- [ ] existența și integrarea unui sistem de logging sau monitorizare, cu dashboard pentruvobservabilitate (0.5p)
+- [ ] existența și integrarea unui sistem de logging sau monitorizare, cu dashboard pentru observabilitate (0.5p)
 - [X] utilizarea de Gitlab CI/CD (sau o unealtă similară) (0.3p)
 
 ## Done

@@ -7,15 +7,17 @@ Aplicația de Monitorizare a Temperaturilor Globale este un sistem avansat care 
 
 In final va trebui sa avem o aplicatie care respecta urmatoarele conditi
 
-- [ ] existența și integrarea celor minim 3 servicii proprii (0.9p)
+- [X] existența și integrarea celor minim 3 servicii proprii (0.9p)
     - [X] Serviciu de autentificare
     - [X] Serviciu de interactiune cu baza de date 
-    - [ ] Serviciu de bussines logic
+    - [X] Serviciu de bussines logic
 - [X] existența și integrarea unui serviciu de baze de date (0.3p)
 - [X] existența și integrarea unui serviciu de utilitar DB (0.3p)
 - [X] existența și integrarea Portainer sau a unui serviciu similar (0.5p)
 - [ ] utilizarea Docker și rularea într-un cluster Docker Swarm (0.6p)
-- [ ] existența și integrarea Kong sau a unui serviciu similar (0.6p)
+  - [X] Utilizarea docker compose
+  - [ ] Utilizarea docker swarm
+- [X] existența și integrarea Kong sau a unui serviciu similar (0.6p)
 - [ ] existența și integrarea unui sistem de logging sau monitorizare, cu dashboard pentru observabilitate (0.5p)
 - [X] utilizarea de Gitlab CI/CD (sau o unealtă similară) (0.3p)
 

@@ -1,12 +1,62 @@
 _format_version: "2.1"
 
 services:
-  - name: idp_auth_api
-    url: http://idp-adminer:8080/
+
+# Accesarea bussiness logic login din http://localhost:8000/login
+  - name: idp_bussiness_logic_login_api
+    url: http://idp_bussiness_api:6002/login
     routes:
-      - name: idp_auth_api-route
+      - name: idp_bussiness_logic_api_login-route
         paths: 
-          - /adminer
+          - /login
+
+# Accesarea bussiness logic countries din http://localhost:8000/countries
+  - name: idp_bussiness_logic_countries_api
+    url: http://idp_bussiness_api:6002/countries
+    routes:
+      - name: idp_bussiness_logic_api_countries-route
+        paths: 
+          - /countries
+
+# Accesarea bussiness logic city din http://localhost:8000/city
+  - name: idp_bussiness_logic_city_api
+    url: http://idp_bussiness_api:6002/city
+    routes:
+      - name: idp_bussiness_logic_api_city-route
+        paths: 
+          - /city
+
+# Accesarea bussiness logic temperatures din http://localhost:8000/temperatures
+  - name: idp_bussiness_logic_temperatures_api
+    url: http://idp_bussiness_api:6002/temperatures
+    routes:
+      - name: idp_bussiness_logic_api_temperatures-route
+        paths: 
+          - /temperatures
+
+# Accesarea bussiness logic city/country din http://localhost:8000/city/country
+  - name: idp_bussiness_logic_city_country_api
+    url: http://idp_bussiness_api:6002/city/country
+    routes:
+      - name: idp_bussiness_logic_api_city_country-route
+        paths: 
+          - /city/country
+
+# Accesarea bussiness logic temperatures/cities din http://localhost:8000/temperatures/cities
+  - name: idp_bussiness_logic_temperatures_city_api
+    url: http://idp_bussiness_api:6002/temperatures/cities
+    routes:
+      - name: idp_bussiness_logic_api_temperatures_cities-route
+        paths: 
+          - /temperatures/cities
+
+# Accesarea bussiness logic temperatures/country din http://localhost:8000/temperatures/country
+  - name: idp_bussiness_logic_temperatures_country_api
+    url: http://idp_bussiness_api:6002/temperatures/country
+    routes:
+      - name: idp_bussiness_logic_api_temperatures_country-route
+        paths: 
+          - /temperatures/country
 
 consumers:
   - username: lab-student

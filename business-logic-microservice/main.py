@@ -21,7 +21,7 @@ def login():
         # not all data received
         return jsonify({"error": "Please provide both username and password."}), 400
     
-    response = requests.post("http://localhost:8888/api/auth/login", json=json_object)
+    response = requests.post("http://idp_auth_api:6000/api/auth/login", json=json_object)
     if response.status_code == 401:
         return jsonify({"error": "UNAUTHORIZED user"}), 401
     
@@ -46,7 +46,7 @@ def validate_tokens(json_object):
     json_access_token = {
         "access_token":access_token
     }
-    response = requests.post("http://localhost:8888/api/auth/validate", json=json_access_token)
+    response = requests.post("http://idp_auth_api:6000/api/auth/validate", json=json_access_token)
     
     if response.json()['active'] == False:
         print("SUCAAa")
@@ -59,7 +59,7 @@ def validate_tokens(json_object):
             "refresh_token":refresh_token
         }
 
-        response = requests.post("http://localhost:8888/api/auth/refresh", json=json_refresh_token)
+        response = requests.post("http://idp_auth_api:6000/api/auth/refresh", json=json_refresh_token)
         if response.status_code == 400:
             return jsonify({"error":"Bad refresh token"}), 400
         
@@ -106,11 +106,11 @@ def generic_response(url, ok_status,methods):
 
 @app.route("/countries", methods=["POST"])
 def post_country():
-    return generic_response("http://localhost:6000/api/countries", 201, "POST")
+    return generic_response("http://idp_python_api:6000/api/countries", 201, "POST")
 
 @app.route("/countries", methods=["GET"])
 def get_country():
-    return generic_response("http://localhost:6000/api/countries", 200, "GET")
+    return generic_response("http://idp_python_api:6000/api/countries", 200, "GET")
 
 @app.route("/countries", methods=["PUT"])
 def put_country():
@@ -122,7 +122,7 @@ def put_country():
     except KeyError:
         return Response(status=400)
 
-    url = "http://localhost:6000/api/countries/" + str(check_country_id)
+    url = "http://idp_python_api:6000/api/countries/" + str(check_country_id)
 
     return generic_response(url, 200, "PUT")
 
@@ -136,7 +136,7 @@ def delete_country():
     except KeyError:
         return Response(status=400)
 
-    url = "http://localhost:6000/api/countries/" + str(check_country_id)
+    url = "http://idp_python_api:6000/api/countries/" + str(check_country_id)
 
     return generic_response(url, 200, "DELETE")
 
@@ -144,11 +144,11 @@ def delete_country():
 
 @app.route("/city", methods=["POST"])
 def post_city():
-    return generic_response("http://localhost:6000/api/cities", 201, "POST")
+    return generic_response("http://idp_python_api:6000/api/cities", 201, "POST")
 
 @app.route("/city", methods=["GET"])
 def get_city():
-    return generic_response("http://localhost:6000/api/cities", 200, "GET")
+    return generic_response("http://idp_python_api:6000/api/cities", 200, "GET")
 
 @app.route("/city", methods=["PUT"])
 def put_city():
@@ -160,7 +160,7 @@ def put_city():
     except KeyError:
         return Response(status=400)
 
-    url = "http://localhost:6000/api/cities/" + str(check_city_id)
+    url = "http://idp_python_api:6000/api/cities/" + str(check_city_id)
 
     return generic_response(url, 200, "PUT")
 
@@ -174,7 +174,7 @@ def delete_city():
     except KeyError:
         return Response(status=400)
 
-    url = "http://localhost:6000/api/cities/" + str(check_city_id)
+    url = "http://idp_python_api:6000/api/cities/" + str(check_city_id)
 
     return generic_response(url, 200, "DELETE")
 
@@ -183,11 +183,11 @@ def delete_city():
 
 @app.route("/temperatures", methods=["POST"])
 def post_temperatures():
-    return generic_response("http://localhost:6000/api/temperatures", 201, "POST")
+    return generic_response("http://idp_python_api:6000/api/temperatures", 201, "POST")
 
 @app.route("/temperatures", methods=["GET"])
 def get_temperatures():
-    return generic_response("http://localhost:6000/api/temperatures", 200, "GET")
+    return generic_response("http://idp_python_api:6000/api/temperatures", 200, "GET")
 
 @app.route("/temperatures", methods=["PUT"])
 def put_temperatures():
@@ -199,7 +199,7 @@ def put_temperatures():
     except KeyError:
         return Response(status=400)
 
-    url = "http://localhost:6000/api/temperatures/" + str(check_temperatures_id)
+    url = "http://idp_python_api:6000/api/temperatures/" + str(check_temperatures_id)
 
     return generic_response(url, 200, "PUT")
 
@@ -213,7 +213,7 @@ def delete_temperatures():
     except KeyError:
         return Response(status=400)
 
-    url = "http://localhost:6000/api/temperatures/" + str(check_temperatures_id)
+    url = "http://idp_python_api:6000/api/temperatures/" + str(check_temperatures_id)
 
     return generic_response(url, 200, "DELETE")
 

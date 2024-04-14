@@ -93,3 +93,6 @@ def get_new_token():
         return Response(status=400)
     token = keycloak_openid.refresh_token(refresh_token)
     return Response(json.dumps(token), status=201)
+
+if __name__ == "__main__":
+    app.run()

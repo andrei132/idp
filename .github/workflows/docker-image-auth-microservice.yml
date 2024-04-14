@@ -8,7 +8,7 @@ on:
   pull_request:
     branches: [ "main" ]
     paths:
-        - 'auth-microservicee/**'
+        - 'auth-microservice/**'
 
 jobs:
   build_and_push:
@@ -25,6 +25,6 @@ jobs:
     - name: Build and push auth-microservice Docker image
       uses: docker/build-push-action@v2
       with:
-          context: ./db-microservice
+          context: ./auth-microservice
           push: true
           tags: girnetandrei0336/auth-microservice:latest

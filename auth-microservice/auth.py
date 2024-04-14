@@ -1,5 +1,6 @@
 from keycloak import KeycloakAdmin
 from keycloak.keycloak_openid import KeycloakOpenID
+from keycloak.exceptions import KeycloakAuthenticationError, KeycloakPostError
 from flask import Flask, request, Response
 import json
 
@@ -33,7 +34,10 @@ def login_user():
         # not all data received
         return Response(status=400)
 
-    token = keycloak_openid.token(username, password)
+    try:
+        token = keycloak_openid.token(username, password)
+    except KeycloakAuthenticationError as e:
+        return Response(status=401)
     return Response(json.dumps(token) , status=200)
 
 
@@ -50,7 +54,10 @@ def logout_user():
         # not all data received
         return Response(status=400)
 
-    keycloak_openid.logout(refresh_token)
+    try:
+        keycloak_openid.logout(refresh_token)
+    except KeycloakPostError as e:
+        return Response(status=400)
     return Response(status=200)
 
 
@@ -60,7 +67,10 @@ def register_user():
     json_object = request.get_json(silent=True)
     if not json_object:
         return Response(status=400)
-    new_user = admin.create_user(json_object)
+    try:
+        new_user = admin.create_user(json_object)
+    except KeycloakPostError as e:
+        return Response(status=409)
     return Response(json.dumps(new_user), status=201)
 
 
@@ -76,7 +86,6 @@ def validate_token():
         # not all data received
         return Response(status=400)
     token_info = keycloak_openid.introspect(access_token)
-    # TODO return valid status
     return Response(json.dumps(token_info), status=200)
 
 
@@ -91,7 +100,10 @@ def get_new_token():
     except KeyError:
         # not all data received
         return Response(status=400)
-    token = keycloak_openid.refresh_token(refresh_token)
+    try:
+        token = keycloak_openid.refresh_token(refresh_token)
+    except KeycloakPostError as e:
+        return Response(status=400)
     return Response(json.dumps(token), status=201)
 
 if __name__ == "__main__":

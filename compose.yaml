@@ -40,9 +40,6 @@ services:
     volumes:
       - ./auth-microservice:/idp_auth
     networks:
-      - pythonapi
-      - adminernet
-      - konginternal
       - monitoring
     depends_on:
       postgres:
@@ -61,7 +58,6 @@ services:
       - ./business-logic-microservice:/business-logic-microservice
     networks:
       - pythonapi
-      - adminernet
       - konginternal
       - monitoring
     depends_on:
@@ -77,6 +73,8 @@ services:
     depends_on: 
       postgres:
         condition: service_healthy
+    networks:
+      - adminernet
 
   keycloak:
     container_name: idp-keycloak
@@ -91,14 +89,7 @@ services:
       - start-dev
     volumes:
       - ./container-data/keycloak:/opt/keycloak/data/h2
-    # healthcheck:
-    #     test: ["CMD", "curl", "--head","fsS", "http://localhost:8090/health/ready"]
-    #     interval: 5s
-    #     timeout: 2s
-    #     retries: 15
     networks:
-      - pythonapi
-      - adminernet
       - monitoring
 
   portainer:
@@ -115,21 +106,18 @@ services:
     container_name: idp-kong
     image: kong:latest
     volumes:
-      - ./kong:/usr/local/kong/declarative # injectarea fișierului de configurare la calea specificată
+      - ./kong:/usr/local/kong/declarative
     environment:
-      KONG_DATABASE: 'off' # obligatoriu, dacă se vrea modul DB-less
-      KONG_DECLARATIVE_CONFIG: /usr/local/kong/declarative/kong.yml # trebuie specificat unde anume se va găsi fișierul de configurare
+      KONG_DATABASE: 'off'
+      KONG_DECLARATIVE_CONFIG: /usr/local/kong/declarative/kong.yml
       KONG_PROXY_ACCESS_LOG: /dev/stdout
       KONG_ADMIN_ACCESS_LOG: /dev/stdout
       KONG_PROXY_ERROR_LOG: /dev/stderr
       KONG_ADMIN_ERROR_LOG: /dev/stderr
       KONG_ADMIN_LISTEN: 0.0.0.0:8001, 0.0.0.0:8444 ssl
     ports:
-      - 8000:8000 # expunerea porturilor
+      - 8000:8000
       - 8443:8443
-    deploy:
-      placement:
-        constraints: [node.role == manager] # constrângerea de rulare doar pe manager, pentru a nu exista conflict la nivel de volume
     networks:
       - konginternal
 

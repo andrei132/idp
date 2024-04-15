@@ -13,6 +13,7 @@ ENV FLASK_RUN_PORT 6002
 ENV FLASK_RUN_HOST 0.0.0.0
 
 EXPOSE 6002
+EXPOSE 5000
 
 # run with python
 CMD ["flask", "run"]

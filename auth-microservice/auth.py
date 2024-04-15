@@ -3,6 +3,7 @@ from keycloak.keycloak_openid import KeycloakOpenID
 from keycloak.exceptions import KeycloakAuthenticationError, KeycloakPostError
 from flask import Flask, request, Response
 import json
+from prometheus_flask_exporter import PrometheusMetrics
 
 # Configure client
 keycloak_openid = KeycloakOpenID(server_url="http://idp-keycloak:8080/",
@@ -17,7 +18,7 @@ admin = KeycloakAdmin(
     realm_name="master")
 
 app = Flask(__name__)
-
+metrics = PrometheusMetrics(app)
 
 @app.route("/api/auth/login", methods=["POST"])
 def login_user():

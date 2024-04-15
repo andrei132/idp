@@ -18,7 +18,7 @@ In final va trebui sa avem o aplicatie care respecta urmatoarele conditi
   - [X] Utilizarea docker compose
   - [ ] Utilizarea docker swarm
 - [X] existența și integrarea Kong sau a unui serviciu similar (0.6p)
-- [ ] existența și integrarea unui sistem de logging sau monitorizare, cu dashboard pentru observabilitate (0.5p)
+- [X] existența și integrarea unui sistem de logging sau monitorizare, cu dashboard pentru observabilitate (0.5p)
 - [X] utilizarea de Gitlab CI/CD (sau o unealtă similară) (0.3p)
 
 ## Done

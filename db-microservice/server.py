@@ -5,10 +5,12 @@ import json
 import collections
 
 from psycopg.errors import UniqueViolation, ForeignKeyViolation, IntegrityConstraintViolation
+from prometheus_flask_exporter import PrometheusMetrics
 
 connection = psycopg.connect("dbname=db_idp user=idp_user password=idp_pass host=idp_postgres port=5432")
 cursor = connection.cursor()
 app = Flask(__name__)
+metrics = PrometheusMetrics(app)
 
 # Create database if database does not exist
 cursor.execute("""

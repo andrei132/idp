@@ -20,8 +20,7 @@ services:
 
   pythonapi:
     container_name: idp_python_api
-    build:
-      context: db-microservice
+    image: girnetandrei0336/idp-pythonapi
     restart: always
     volumes:
       - ./db-microservice:/idp_db
@@ -34,8 +33,7 @@ services:
 
   authapi:
     container_name: idp_auth_api
-    build:
-      context: auth-microservice
+    image: girnetandrei0336/auth-microservice
     restart: always
     volumes:
       - ./auth-microservice:/idp_auth
@@ -47,8 +45,7 @@ services:
 
   bussinessapi:
     container_name: idp_bussiness_api
-    build:
-      context: business-logic-microservice
+    image: girnetandrei0336/idp-business-logic
     restart: always
     volumes:
       - ./business-logic-microservice:/business-logic-microservice

@@ -1,9 +1,42 @@
 import requests
 from flask import Flask, request, Response, jsonify
 from prometheus_flask_exporter import PrometheusMetrics
+import urllib
 
 app = Flask(__name__)
 metrics = PrometheusMetrics(app)
+
+@app.route("/register", methods=["POST"])
+def register():
+    json_object = request.get_json(silent=True)
+    if not json_object:
+        return jsonify({"error": "JSON data is missing"}), 400
+
+    # try to get all needed information from json
+    try:
+        username = json_object['username']
+        password = json_object['password']
+
+        if not username or not password:
+            return jsonify({"error": "Username or password cannot be empty."}), 400
+
+    except KeyError:
+        # not all data received
+        return jsonify({"error": "Please provide both username and password."}), 400
+    
+    body = {
+            "username": username,
+            "enabled": True,
+            "credentials": [{
+                "type": "password",
+                "value": password,
+                "temporary": False,
+            }]
+    }
+    response = requests.post("http://idp_auth_api:6000//api/auth/register", json=body)
+    if response.status_code == 201:
+        return "Success"
+    return response
 
 @app.route("/login", methods=["POST"])
 def login():
@@ -51,7 +84,6 @@ def validate_tokens(json_object):
     response = requests.post("http://idp_auth_api:6000/api/auth/validate", json=json_access_token)
     
     if response.json()['active'] == False:
-        print("SUCAAa")
         try:
             refresh_token = json_object['refresh_token']
         except KeyError:
@@ -189,7 +221,26 @@ def post_temperatures():
 
 @app.route("/temperatures", methods=["GET"])
 def get_temperatures():
-    return generic_response("http://idp_python_api:6000/api/temperatures", 200, "GET")
+    json_object = request.get_json(silent=True)
+    params = dict()
+    if not json_object:
+        return Response(status=400)
+
+    if (json_object["lon"]):
+        params.update({'lon': json_object["lon"]})#["lon"] = json_object["lon"]
+    
+    if (json_object["lat"]):
+        params["lat"] = json_object["lat"]
+    
+    if (json_object["from"]):
+        params["from"] = json_object["from"]
+    
+    if (json_object["until"]): 
+        params["until"] = json_object["until"]
+    
+    
+    
+    return generic_response("http://idp_python_api:6000/api/temperatures/?" + urllib.parse.urlencode(params), 200, "GET")
 
 @app.route("/temperatures", methods=["PUT"])
 def put_temperatures():
@@ -221,15 +272,64 @@ def delete_temperatures():
 
 @app.route("/city/country", methods=["GET"])
 def get_city_by_country():
-    return jsonify({"erorr":"Not yet impemented"}) , 200
+    json_object = request.get_json(silent=True)
+    if not json_object:
+        return Response(status=400)
+    try:
+        country_id = json_object['id']
+    except KeyError:
+        return Response(status=400)
+
+    return generic_response("http://idp_python_api:6000/api/cities/country/" + str(country_id), 200, "GET")
 
 @app.route("/temperatures/cities", methods=["GET"])
 def get_temperature_by_city():
-    return jsonify({"erorr":"Not yet impemented"}) , 200
+    json_object = request.get_json(silent=True)
+    params = {}
+    if not json_object:
+        return Response(status=400)
+    try:
+        city_id = json_object['id']
+        if (json_object["lon"]):
+            params["lon"] = json_object["lon"]
+
+        if (json_object["lat"]):
+            params["lat"] = json_object["lat"]
+
+        if (json_object["from"]):
+            params["from"] = json_object["from"]
+
+        if (json_object["until"]):
+            params["until"] = json_object["until"]
+
+    except KeyError:
+        return Response(status=400)
+
+    return generic_response("http://idp_python_api:6000/api/temperatures/cities/" + str(city_id) + "/?" + urllib.parse.urlencode(params), 200, "GET")
 
 @app.route("/temperatures/country", methods=["GET"])
 def get_temperature_by_country():
-    return jsonify({"erorr":"Not yet impemented"}) , 200
+    json_object = request.get_json(silent=True)
+    params = {}
+    if not json_object:
+        return Response(status=400)
+    try:
+        city_id = json_object['id']
+        if (json_object["lon"]):
+            params["lon"] = json_object["lon"]
+        
+        if (json_object["lat"]):
+            params["lat"] = json_object["lat"]
+        
+        if (json_object["from"]):
+            params["from"] = json_object["from"]
+        
+        if (json_object["until"]):
+            params["until"] = json_object["until"]
+    
+    except KeyError:
+        return Response(status=400)
+    return generic_response("http://idp_python_api:6000/api/temperatures/countries/" + str(city_id) + "/?" + urllib.parse.urlencode(params), 200, "GET")
 
 if __name__ == "__main__":
     app.run()

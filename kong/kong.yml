@@ -10,6 +10,14 @@ services:
         paths: 
           - /login
 
+# Accesarea bussiness logic register din http://localhost:8000/register
+  - name: idp_bussiness_logic_register_api
+    url: http://idp_bussiness_api:6002/register
+    routes:
+      - name: idp_bussiness_logic_api_register-route
+        paths: 
+          - /register
+
 # Accesarea bussiness logic countries din http://localhost:8000/countries
   - name: idp_bussiness_logic_countries_api
     url: http://idp_bussiness_api:6002/countries
